@@ -1,4 +1,6 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+对应后端的项目地址：https://github.com/liserlzhy/note-server
+
+项目效果浏览地址：http://120.78.177.139
 
 ## 安装依赖
 

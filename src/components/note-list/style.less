@@ -5,9 +5,13 @@
     position: fixed;
     bottom: 20px;
     right: 20px; 
+    z-index: 100;
     color: @theme-color;
     font-size: 50px;
     cursor: pointer;
+  }
+  .am-list-body {
+    border: 0;
   }
   .am-card {
     position: relative;
@@ -45,25 +49,27 @@
     top: 0;
     left: 0;
     z-index: 150;
-    background-color: #f7f7f7;
+    background-color: #f5f5f9;
     .am-navbar-left {
       .am-icon {
         cursor: pointer;
       }
-      .icon-PC_tuichudenglu {
-        color: #aaa;
-        font-size: 20px;
-        cursor: pointer;
-      }
+    }
+    .icon-tuichu {
+      color: #aaa;
+      font-size: 20px;
+      cursor: pointer;
     }
     .manage {
       cursor: pointer;
       color: black;
+      margin-right: 20px;
     }
     .icon-piliangguanli {
       font-size: 20px;
       cursor: pointer;
-      color: black;
+      color: #aaa;
+      margin-right: 20px;
     }
   }
 
@@ -91,15 +97,6 @@
       }
     }
   }
-  .cancel {
-    flex: 1;
-    display: flex;
-    position: relative;
-    justify-content: center;
-    align-items: center;
-    color: #ff6600;
-    cursor: pointer;
-  }
 }
 .manage-tool {
   position: fixed;
@@ -109,7 +106,7 @@
   display: flex;
   justify-content: space-evenly;
   align-items: center;
-  border-top:1px #aaa solid;
+  border-top:1px #dcdcdc solid;
   background-color: #fff;
   z-index: 999;
   div {
@@ -128,7 +125,7 @@
 
 .single-foo-menu {
   .am-menu .am-flexbox .am-flexbox-item:last-child {
-    background-color: #f7f7f7;
+    background-color: #f5f5f9;
   }
   position: fixed;
   width: 100%;
@@ -165,5 +162,5 @@
 }
 
 .am-menu .am-flexbox .am-flexbox-item:last-child .am-list .am-list-item {
-  background-color: #f7f7f7;
+  background-color: #f5f5f9;
 }

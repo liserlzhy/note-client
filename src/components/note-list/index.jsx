@@ -1,9 +1,9 @@
 import React from 'react'
-import { ListView, WingBlank, Card, Toast, InputItem, Icon, NavBar, Checkbox, Menu, ActivityIndicator, Button, Modal, ActionSheet } from 'antd-mobile';
-import { reqGetNote, reqDeleteNote, reqCategory, reqMoveCategory } from '../../api'
 import { formatTime } from '../../assets/js'
 import { createForm } from 'rc-form'
+import { reqGetNote, reqDeleteNote, reqCategory, reqMoveCategory } from '../../api'
 import './style.less'
+import { ListView, WingBlank, Card, Toast, InputItem, Icon, NavBar, Checkbox, Menu, ActivityIndicator, Button, Modal, ActionSheet } from 'antd-mobile';
 
 const alert = Modal.alert
 const prompt = Modal.prompt
@@ -31,7 +31,6 @@ class NoteList extends React.Component {
       data: [],
       dataArr: [],
       pageSize: 10,
-      showCancelBtn: false,
       isManage: false,
       allChecked: false,
       show: false,
@@ -89,20 +88,27 @@ class NoteList extends React.Component {
       }
     } 
   }
-  async componentDidMount() {
+  componentDidMount() {
     let category = this.props.location.category || '全部分类'
     this.genData(true, category)
+    this.setCategory()
+    this.setState({ selectedFolder: category })
+  }
+
+  setCategory = async () => {
     const res = await reqCategory()
-    let initData = [
+    let initData = []
+    let allCount = res.data.data ? res.data.data.reduce((a, b) => a + b.count, 0) : 0
+    initData = [
       {
         value: '全部分类',
-        label: '全部分类'
+        label: `全部分类   (${allCount})`
       }
     ] 
-    if (res.data.err === 0 && res.data.data.length > 1) {
-      res.data.data.map(item => (initData.push({ value: item._id, label: item._id })))
+    if (res.data.err === 0 && res.data.data.length !== 0) {
+      res.data.data.map(item => (initData.push({ value: item._id, label: `${item._id}   (${item.count})` })))
     }
-    this.setState({ cateData: initData, selectedFolder: category })
+    this.setState({ cateData: initData })
   }
 
   onEndReached = async () => {
@@ -122,16 +128,13 @@ class NoteList extends React.Component {
 
   handleCancel = () => {
     const { selectedFolder } = this.state
-    this.setState({showCancelBtn: false }, () => {
-      this.genData(true, selectedFolder)
-    })
+    this.genData(true, selectedFolder)
     this.props.form.setFieldsValue({ keyword: '' })
   }
 
   handleManage = () => {
     this.setState(preState => ({
-      isManage: !preState.isManage,
-      showCancelBtn: false
+      isManage: !preState.isManage
     }))
   }
 
@@ -163,7 +166,7 @@ class NoteList extends React.Component {
         text: '确定',
         onPress: async () => {
           const res = await reqDeleteNote({itemCheckedIds})
-          
+          this.setCategory()
           if (res.data.err === 0) {
             data = data.filter(note => !note.checked)
             dataArr = dataArr.slice(0, data.length)
@@ -196,13 +199,11 @@ class NoteList extends React.Component {
 
   onChange = (value) => {
     const { cateData } = this.state
-    let label = '';
     this.props.form.setFieldsValue({ keyword: '' })
     for(let i = 0; i < cateData.length; i++) {
       if (cateData[i].value === value[0]) {
-        label = cateData[i].label
-        this.genData(true, label)
-        this.setState({ show: false, selectedFolder: label, showCancelBtn: false })
+        this.genData(true, value[0])
+        this.setState({ show: false, selectedFolder: value[0] })
         break
       }
     }
@@ -225,25 +226,27 @@ class NoteList extends React.Component {
 
   createFolder = (cb) => {
     const { cateData } = this.state
-    let folderName = ''
-    prompt('新建文件夹', '', (name) => {
-      folderName = name.trim()
-      if (!folderName) {
-        Toast.info('不能为空', 1)
-        this.createFolder()
-      } else if (cateData.some(item => item.label === folderName)) {
-        Toast.info('该名称已存在', 1)
-        this.createFolder()
-      } else {
-        cateData.splice(1, 0, { value: folderName, label: folderName})
-        cb && cb(folderName)
-        this.setState({cateData: cateData})
-      }
-    },
-      '',
-      null,
-      ['请输入名称']
-    )
+    setTimeout(() => {
+      let folderName = ''
+      prompt('新建文件夹', '', (name) => {
+        folderName = name.trim()
+        if (!folderName) {
+          Toast.info('不能为空', 1)
+          this.createFolder()
+        } else if (cateData.some(item => item.label === folderName)) {
+          Toast.info('该名称已存在', 1)
+          this.createFolder()
+        } else {
+          cateData.splice(1, 0, { value: folderName, label: folderName + '   (0)'})
+          cb && cb(folderName)
+          this.setState({cateData: cateData})
+        }
+      },
+        '',
+        null,
+        ['请输入名称']
+      )
+    }, 0)
   }
 
   logout = () => {
@@ -255,8 +258,8 @@ class NoteList extends React.Component {
     const { cateData, data, selectedFolder } = this.state
     const BUTTONS = ['新建文件夹']
     cateData.forEach(item => {
-      if (item.label !== '全部分类' && item.label !== '未分类') {
-        BUTTONS.push(item.label)
+      if (item.value !== '全部分类' && item.value !== '未分类') {
+        BUTTONS.push(item.value)
       }
     })
 
@@ -277,6 +280,7 @@ class NoteList extends React.Component {
           if (res.data.err === 0) {
             this.genData(true, selectedFolder)
             Toast.info(res.data.msg, 1)
+            this.setCategory()
           }
         })
       } else {
@@ -286,10 +290,15 @@ class NoteList extends React.Component {
         if (res.data.err === 0) {
           this.genData(true, selectedFolder)
           Toast.info(res.data.msg, 1)
+          this.setCategory()
         }
       }
 
     })
+  }
+
+  cross = () => {
+    this.setState({isManage: false, allChecked: true}, this.handleAllChecked)
   }
   render() {
     const { data, isManage, allChecked, show, cateData, selectedFolder } = this.state
@@ -301,10 +310,8 @@ class NoteList extends React.Component {
         <div
           key={`${sectionID}-${rowID}`}
           style={{
-            backgroundColor: '#f7f7f7',
-            height: 8,
-            borderTop: '1px solid #ECECED',
-            borderBottom: '1px solid #ECECED',
+            backgroundColor: '#f5f5f9',
+            height: 8
           }}
         />
       )
@@ -352,12 +359,9 @@ class NoteList extends React.Component {
     const header = () => {
       return (
         <>
-          <InputItem placeholder="搜索便签" disabled={isManage} { ...getFieldProps('keyword', {initialValue: '', onChange: (val) => this.handleSearch(val)}) } onFocus={() => {this.setState({ showCancelBtn: true })}} clear={true} >
+          <InputItem placeholder="搜索便签" disabled={isManage} { ...getFieldProps('keyword', {initialValue: '', onChange: (val) => this.handleSearch(val)}) } clear={true} >
             <Icon type="search" color="#777"/> 
           </InputItem>
-          <div className="cancel"  style={{ display: this.state.showCancelBtn ? 'flex' : 'none' }}>
-            <span onClick={this.handleCancel}>取消</span>
-          </div>
         </>
       )
     }
@@ -368,7 +372,7 @@ class NoteList extends React.Component {
           value={[selectedFolder]}
           level={1}
           onChange={this.onChange}
-          height={document.documentElement.clientHeight * 0.5}
+          height={document.documentElement.clientHeight * 0.6}
         />
         <Button onClick={() => this.createFolder()}>新建文件夹</Button>
       </div>
@@ -382,11 +386,13 @@ class NoteList extends React.Component {
       <div className="note-list">
         <NavBar mode="light"
           // leftContent={<Icon type="cross" size="lg" style={{display: isManage?'block':'none'}}/>}
-          leftContent={isManage ? <Icon type="cross" size="lg" /> : <span className="iconfont icon-PC_tuichudenglu"></span>}
-          onLeftClick={() => isManage ? this.setState({isManage: false, allChecked: true}, this.handleAllChecked) : this.logout()}
+          leftContent={isManage ? <Icon type="cross" size="lg" onClick={this.cross}/> : null}
           rightContent={
-            isManage ? <span key="2" onClick={this.handleAllChecked} className={`iconfont icon-piliangguanli ${allChecked ? 'active': ''}`}/> :
-            data.length !== 0 && !show ? <span key="1" className="manage" onClick={this.handleManage}>管理</span> : ''
+            [
+              isManage ? <span key="2" onClick={this.handleAllChecked} className={`iconfont icon-piliangguanli ${allChecked ? 'active': ''}`}/> :
+              data.length !== 0 && !show ? <span key="1" className="manage" onClick={this.handleManage}>管理</span> : '',
+              <span onClick={this.logout} key="0" className="iconfont icon-tuichu"></span>,
+            ]
           }>
             {isManage ? checkedItemsLength === 0 ? '请选择项目' : `已选择${checkedItemsLength}项` : <div onClick={this.handleClick} className='category-selector'><span>{selectedFolder==='全部分类'?'便签':selectedFolder}</span><Icon size="xxs" type={show ? 'up' : 'down'}></Icon></div>}
         </NavBar>

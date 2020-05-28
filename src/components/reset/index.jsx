@@ -104,8 +104,8 @@ class Reset extends Component {
             <WhiteSpace/>
             <Button type="primary" onClick={this.reset}>重置密码</Button>
             <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-              <Button onClick={this.toRegister} style={{flex: 1, borderRadius: 0}} >前往注册</Button>
-              <Button onClick={this.toLogin} style={{flex: 1, borderRadius: 0}}>前往登录</Button>
+              <Button onClick={this.toRegister} className="foot-button">前往注册</Button>
+              <Button onClick={this.toLogin} className="foot-button">前往登录</Button>
             </div>
           </List>
         </WingBlank>

@@ -101,7 +101,7 @@ class Register extends Component {
             </Flex>
             <WhiteSpace/>
             <Button type="primary" onClick={this.register}>注&nbsp;&nbsp;&nbsp;册</Button>
-            <Button onClick={this.toLogin}>已有帐户</Button>
+            <Button onClick={this.toLogin} className="foot-button">已有帐户</Button>
           </List>
         </WingBlank>
     </div>

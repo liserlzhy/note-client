@@ -1,6 +1,5 @@
 import React from 'react';
 import Loadable from 'react-loadable';
-import { Icon } from 'antd-mobile'
 
 export default function withLoadable (comp) {
     return Loadable({
@@ -16,7 +15,7 @@ export default function withLoadable (comp) {
                 </div>;
             } else if (props.pastDelay) {
                 return <div className='center'>
-                  <div>加载中<Icon type="loading" /></div>
+                  <div>加载中 ...</div>
                 </div>;
             } else {
                 return null;
